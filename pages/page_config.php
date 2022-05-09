@@ -10,12 +10,14 @@ if(!empty($_SESSION['USERID'])) {
 
 try {
     // DBへ接続
-    $dbh = new PDO("pgsql:host=127.0.0.1; dbname=booktown;", 'booktown', 'kouki0328');
+    require("../cls/dbconnect.php");
 
     //ログイン画面でpostされたログインIDとパスワードをaccountテーブルで検索し、該当すればそのlogin_id, passwordを取得
     //$sql = "SELECT login_id, password FROM account WHERE login_id = '" .$login_id. "' AND password = '" .$password. "'";
     // SQL作成
-    $sql = "SELECT * FROM users WHERE serial_no = ".$user_id. "ORDER BY serial_no ASC";
+    $sql = "SELECT * FROM users WHERE serial_no = ".$user_id. " ORDER BY serial_no ASC";
+    // echo $sql;
+    // exit;
     $data = $dbh->query($sql)->fetchAll();
     
 } catch (PDOException $e) {
@@ -48,7 +50,7 @@ The above copyright notice and this permission notice shall be included in all c
   <link rel="icon" type="image/png" href="../assets/img/favicon.png">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
   <title>
-    Material Dashboard by Creative Tim
+    後払いチェッカー
   </title>
   <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
   <!--     Fonts and icons     -->
@@ -59,8 +61,9 @@ The above copyright notice and this permission notice shall be included in all c
   <link href="../assets/css/material-dashboard.css?v=2.1.2" rel="stylesheet" />
   <!-- CSS Just for demo purpose, don't include it in your project -->
   <link href="../assets/demo/demo.css" rel="stylesheet" />
-
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <!--noindex-->
+  <meta name="robots" content="noindex" />
 </head>
 
 <body class="">
@@ -140,7 +143,7 @@ The above copyright notice and this permission notice shall be included in all c
                 <div class="form-group">
                   <label for="exampleInputPassword1">パスワード（5文字以上30文字以下の半角英数字）</label>
                   <input type="password" class="form-control" name="password" id="password" placeholder="Password" with="alphanum"
-                  value="<?php echo $row['password']; ?>">
+                  value="">
                 </div>
                 <div class="form-check">
                     <label class="form-check-label">
@@ -488,6 +491,7 @@ The above copyright notice and this permission notice shall be included in all c
       });
     });
   </script>
+  <!-- 以下、本村が記述したjQuery -->
   <script>
   $(function() {
       var password = '#password';

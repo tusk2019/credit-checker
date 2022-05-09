@@ -2,7 +2,7 @@
 <html lang="ja">
 
 <head>
-  <title>Hello, world!</title>
+  <title>後払いチェッカー</title>
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
@@ -17,6 +17,8 @@
       position: none !important;
     } */
   </style>
+  <!--noindex-->
+  <meta name="robots" content="noindex" />
 </head>
 
 <body>
@@ -87,6 +89,7 @@
 <!-- sweetalert -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
 
+ <!-- 以下、本村が記述したjQuery -->
 <script type="text/javascript">
 $(document).ready(function () {
   $('#setUser').validate({

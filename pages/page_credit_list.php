@@ -1,8 +1,11 @@
 <?php
-
+ini_set( 'display_errors', 1 );
+ini_set( 'error_reporting', E_ALL );
 session_start();
 $user_id = null;
 $user_nm = null;
+$record_cnt = 0;
+$no_data_flg = 0;
 //$user_id = $_SESSION['USERID'];
 
 if(!empty($_SESSION['USERID'])) {
@@ -14,15 +17,35 @@ if(!empty($_SESSION['USERNM'])) {
 }
 try {
     // DBへ接続
-    $dbh = new PDO("pgsql:host=127.0.0.1; dbname=booktown;", 'booktown', 'kouki0328');
+    require("../cls/dbconnect.php");
+    // echo "ここまでok";
+    // exit;
+    // $record_cnt = $dbh->prepare("SELECT COUNT(*)  FROM `credit` WHERE delete_flg=0");
+    // $record_cnt->execute();
+    // $record_cnt_res = $record_cnt->fetch();
+    // var_dump($mem_cnt_res);
+    $cnt_sql = "SELECT COUNT(*)  FROM `credit` WHERE delete_flg=0";
+    $cnt_data = $dbh->query($cnt_sql)->fetch();
+    // var_dump($cnt_data);
+    // exit;
+    if($cnt_data['COUNT(*)'] == 0) {
+      $no_data_flg = 1;
+    }
 
     //ログイン画面でpostされたログインIDとパスワードをaccountテーブルで検索し、該当すればそのlogin_id, passwordを取得
     //$sql = "SELECT login_id, password FROM account WHERE login_id = '" .$login_id. "' AND password = '" .$password. "'";
     // SQL作成
+    if($no_data_flg == 0) {
     $sql = "SELECT * FROM credit WHERE user_id = ".$user_id. " AND delete_flg = 0 ORDER BY serial_no ASC";
+    // echo $sql;
+    // exit;
     $data = $dbh->query($sql)->fetchAll();
     $sql2 = "SELECT user_name FROM users WHERE serial_no = ".$user_id. " AND delete_flg = 0 ORDER BY serial_no ASC";
     $user_data = $dbh->query($sql2)->fetchAll();
+    }else{
+      $sql2 = "SELECT user_name FROM users WHERE serial_no = ".$user_id. " AND delete_flg = 0 ORDER BY serial_no ASC";
+      $user_data = $dbh->query($sql2)->fetchAll();
+    }
     //$user_nm = array_column('user_name');
 } catch (PDOException $e) {
     echo $e->getMessage();
@@ -54,7 +77,7 @@ The above copyright notice and this permission notice shall be included in all c
   <link rel="icon" type="image/png" href="../assets/img/favicon.png">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
   <title>
-    Material Dashboard by Creative Tim
+    後払いチェッカー
   </title>
   <meta content='width=device-width, initial-scale=1.0, shrink-to-fit=no' name='viewport' />
   <!--     Fonts and icons     -->
@@ -65,8 +88,9 @@ The above copyright notice and this permission notice shall be included in all c
   <link href="../assets/css/material-dashboard.css?v=2.1.2" rel="stylesheet" />
   <!-- CSS Just for demo purpose, don't include it in your project -->
   <link href="../assets/demo/demo.css" rel="stylesheet" />
-
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <!--noindex-->
+  <meta name="robots" content="noindex" />
 </head>
 
 <body class="">
@@ -164,7 +188,7 @@ The above copyright notice and this permission notice shall be included in all c
                         </th>
                       </thead>
                       <tbody>
-                      <?php foreach ($data as $row): ?>
+                      <?php if($no_data_flg == 0) {foreach ($data as $row): ?>
                         <tr>
                           <!--UPDATEの時はserial_noを使う-->
                           <?php echo '<td class="credit-serial-no" style="display:none;">'.$row['serial_no'].'</td>'; ?>
@@ -193,7 +217,8 @@ The above copyright notice and this permission notice shall be included in all c
                           <td><button type="button" class="btn btn-danger delete-btn" data-toggle="modal"
                               data-target="#deleteModal" data-sn="<?php echo $row['serial_no']; ?>" data-user-id="<?php echo $user_id; ?>">解約済み</button></td>
                         </tr>
-                        <?php endforeach; ?>
+                        <?php endforeach; } else {echo "データがありません。";}?>
+                        
                       </tbody>
                     </table>
                   </div>
@@ -508,6 +533,7 @@ The above copyright notice and this permission notice shall be included in all c
       });
     });
   </script>
+  <!-- 以下、本村が記述したjQuery -->
   <script>
     $("#contractDate").datepicker();
   </script>
@@ -528,6 +554,10 @@ The above copyright notice and this permission notice shall be included in all c
           date_of_payment: {
             required: true,
             dateISO: true
+          },
+          payment: {
+            required: true,
+            number: true
           }
         },
         messages: {
@@ -539,8 +569,12 @@ The above copyright notice and this permission notice shall be included in all c
             dateISO: "日付を正しく入力してください。"
           },
           date_of_payment: {
-            required: "パスワードを入力してください。",
+            required: "日付を選択してください。",
             dateISO: "日付を正しく入力してください。"
+          },
+          payment: {
+            required: "金額を入力してください。",
+            number: "半角数字で入力してください。"
           }
         },
         errorElement: 'span',

@@ -11,7 +11,7 @@ if(!empty($_SESSION['USERID'])) {
 <html lang="ja">
 
 <head>
-  <title>Hello, world!</title>
+  <title>後払いチェッカー</title>
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
@@ -26,6 +26,8 @@ if(!empty($_SESSION['USERID'])) {
       position: none !important;
     } */
   </style>
+  <!--noindex-->
+  <meta name="robots" content="noindex" />
 </head>
 
 <body>
