@@ -47,7 +47,7 @@ if(!empty($_POST['delete_flg'])) {
 
 try {
     // DBへ接続
-    $dbh = new PDO("pgsql:host=127.0.0.1; dbname=booktown;", 'booktown', 'kouki0328');
+    require("dbconnect.php");
 
     if($delete_flg==1) {
       $sql = "UPDATE credit
