@@ -20,7 +20,8 @@ if (!empty($_POST['login_id'])) {
 }
 
 if (!empty($_POST['password'])) {
-    $password = htmlspecialchars($_POST['password']);
+    $password_org = htmlspecialchars($_POST['password']);
+    $password = password_hash($password_org, PASSWORD_BCRYPT);
 }
 
 if (!empty($_POST['update_flg'])) {
@@ -37,7 +38,7 @@ if (!empty($_POST['delete_flg'])) {
 
 try {
     // DBへ接続
-    $dbh = new PDO("pgsql:host=127.0.0.1; dbname=booktown;", 'booktown', 'kouki0328');
+    require("dbconnect.php");
 		//退会するとき
 		if($delete_flg == 1) {
 			$sql = "UPDATE users
@@ -76,9 +77,22 @@ try {
           header("Location: ../pages/page_config.php?success=1");
           exit();
       } else {
-				//存在する（データを登録せずに、エラーアラートを送る）
-				header("Location: ../pages/page_config.php?error=1");
-				exit();
+        if($login_id == $_SESSION['LOGIN_ID']) {
+          //存在するが、ログインIDが同一人物のものならそれ以外を更新（ユーザーデータを登録する）
+          $sql = "UPDATE users
+          SET user_name = '$user_name',
+          password = '$password',
+          update_stamp = now()
+          WHERE  serial_no = $serial_no";
+          $dbh->query($sql);
+          $_SESSION['LOGIN_ID'] = $login_id;
+          header("Location: ../pages/page_config.php?success=1");
+          exit();
+        }else {
+          //存在する（データを登録せずに、エラーアラートを送る）
+          header("Location: ../pages/page_config.php?error=1");
+          exit();
+        }
 			}
     }
 
@@ -88,7 +102,7 @@ try {
       $sth = $dbh->query($login_id_check);
       $sth->execute();
       if ($sth->fetch() === false) {
-          //存在しない（データを登録する）
+          //存在しない（ユーザーデータを登録する）
           $sql = "INSERT INTO users (user_name, login_id, password, delete_flg, create_stamp, update_stamp) 
           VALUES ('$user_name', '$login_id', '$password', 0, now(), now())";
           $data = $dbh->query($sql);
